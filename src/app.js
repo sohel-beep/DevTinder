@@ -6,6 +6,9 @@
 //now we are just listening our requests not handelling it now we handle it 
 //this function is known as a request handler
 
+//const { default: mongoose } = require("mongoose");
+
+
 
 
 //if we do .use it will do any type of requests not particular like if we do .get it will only do .get
@@ -646,6 +649,7 @@ app.listen(7777, () => {
 
 
 
+/*
 const express = require("express");
 require("./config/database")
 const app = express();
@@ -655,7 +659,81 @@ const app = express();
  //Start server
 app.listen(7777, () => {
     console.log("Server is running on port 7777");
+})*/
+
+
+/*
+const express = require("express");
+
+const connectt = require("./config/database")
+const User = require("./models/user")
+const app = express();
+
+app.post("/singup", async(req,res)=>{
+    const user = new User({
+    firstName:"sohel",
+    lastName:"khan",
+    age:23,
+    password:"soheluvb"
 })
+
+await user.save()
+res.send("data saved succesfully")
+})
+
+
+
+
+
+connectt()
+.then(()=>{
+    console.log("db connected")
+    app.listen(7777,()=>{
+    console.log("server is running")
+})
+}).catch((err)=>{
+    console.error("not connected")
+})*/
+
+
+
+
+
+const express = require("express");
+const connectt = require("./config/database"); // correct path
+const User = require("./models/user.js");
+
+
+const app = express();
+app.use(express.json());
+
+app.post("/user", async (req, res) => {
+  try {
+    const user = new User({
+      firstName: "Sohel",
+      lastName: "Khan",
+      age: 23,
+      password: "soheluvb"
+    });
+
+    await user.save();
+    res.send("Data saved successfully!");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error saving data");
+  }
+});
+
+connectt()
+  .then(() => {
+    console.log("DB connected");
+    app.listen(7777, () => console.log("Server running on port 7777"));
+  })
+  .catch((err) => console.error("DB connection failed", err));
+
+
+ 
+
 
 
 
