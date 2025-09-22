@@ -662,11 +662,11 @@ app.listen(7777, () => {
 })*/
 
 
-/*
+
 const express = require("express");
 
 const connectt = require("./config/database")
-const User = require("./models/user")
+const User = require("./middlewares/models/user")
 const app = express();
 
 app.post("/singup", async(req,res)=>{
@@ -693,43 +693,12 @@ connectt()
 })
 }).catch((err)=>{
     console.error("not connected")
-})*/
+})
 
 
 
 
 
-const express = require("express");
-const connectt = require("./config/database"); // correct path
-const User = require("./models/user.js");
-
-
-const app = express();
-app.use(express.json());
-
-app.post("/user", async (req, res) => {
-  try {
-    const user = new User({
-      firstName: "Sohel",
-      lastName: "Khan",
-      age: 23,
-      password: "soheluvb"
-    });
-
-    await user.save();
-    res.send("Data saved successfully!");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error saving data");
-  }
-});
-
-connectt()
-  .then(() => {
-    console.log("DB connected");
-    app.listen(7777, () => console.log("Server running on port 7777"));
-  })
-  .catch((err) => console.error("DB connection failed", err));
 
 
  
