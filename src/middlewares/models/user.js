@@ -84,7 +84,7 @@ const userdata = new mongoose.Schema({
         mnaxLength:40,
 
     },
-    lastname:{
+    lastName:{
         type:String
     },
     age:{
@@ -105,6 +105,7 @@ const userdata = new mongoose.Schema({
     email:{
       type:String,
       unique:true,
+      trim:true,
     },
     password:{
         type:String,
@@ -113,6 +114,11 @@ const userdata = new mongoose.Schema({
     about:{
       type:String,
       default:"hello guys i am good"
+    },
+    skills:{
+      type:[String],
+      default:[],
+
     }
 },{
   timestamps:true,// so from now this will us to see when user eneterd or updated this will show us for all because we added this at last 

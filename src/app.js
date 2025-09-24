@@ -791,14 +791,27 @@ app.delete("/user",async(req,res)=>{
 
 
 //see now we want to to update how to update the first thing we need as param is id we need to update the second is variable the third is data from wheere we get 
-app.patch("/user",async(req,res)=>{
+/*app.patch("/user/:userid",async(req,res)=>{
     //the req.body is whole body documnts and almost every thing in express return promise so we have  to us easync await 
-    const userid = req.body._id
+    const userid = req.params.userid
     const data = req.body
     try{
-        const userm = await User.findByIdAndUpdate({_id:userid},data)
-        runValidaters:true //this will help to not update existing users gender also you can check in users for more 
-
+        const allowedupdates = ["firstName","lastName","gender","skills"]
+        const updates = Object.keys(data)
+        isvalid = updates.every((k)=>allowedupdates.includes(k))
+            if(!isvalid){
+                throw new Error("cant be updated")
+        } 
+        const userm = await User.findByIdAndUpdate(userid,data,
+             {
+                runValidators:true
+             }
+        )
+        //this will help to not update existing users gender also you can check in users for more 
+//so bro in this code if want to update suppose email of existing user it will update the id so this the bad practise the user can only have 
+//one email id at a time and it cant be updated later so how we do it if ithe email vhanged so it means i completely changed my profile
+//so its better not to be changed  email its better to lock in this we can do xyz:helllo it will also add this so if we want to do 
+//only add certain type type profiles so we can do see
          if (!userm) {
       return res.status(404).send("User not found");
     }
@@ -809,7 +822,37 @@ app.patch("/user",async(req,res)=>{
         console.log(err)
         res.status(400).send("something went wrong")
     }
-})
+})*/
+
+app.patch("/user/:userid", async (req, res) => {
+  const userid = req.params.userid;   // id from URL
+  const data = req.body;              // update fields
+
+  try {
+    const allowedUpdates = ["firstName", "lastName", "gender", "skills"];
+    const updates = Object.keys(data);
+
+    const isValid = updates.every((k) => allowedUpdates.includes(k));
+    if (!isValid) {
+      return res.status(400).send("Invalid fields cannot be updated");
+    }
+
+    const userm = await User.findByIdAndUpdate(userid, data, {
+      new: true,          // return updated doc
+      runValidators: true // enforce schema rules
+    });
+
+    if (!userm) {
+      return res.status(404).send("User not found");
+    }
+
+    res.send(userm);
+  } catch (err) {
+    console.error("Update Error:", err.message);
+    res.status(400).send("Something went wrong");
+  }
+});
+
   
 
 
