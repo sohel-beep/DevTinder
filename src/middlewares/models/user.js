@@ -78,7 +78,11 @@ const mongoose = require("mongoose")
 
 const userdata = new mongoose.Schema({
     firstName:{
-        type:String
+        type:String,
+        Require:true,
+        minLength:4,
+        mnaxLength:40,
+
     },
     lastname:{
         type:String
@@ -86,12 +90,32 @@ const userdata = new mongoose.Schema({
     age:{
         type:Number
     },
-    gender:{
-        type:String
+    gender: {
+  type: String,
+  enum: ["male", "female", "other"], // quick validation
+  validate(value) {
+    if (!["male", "female", "other"].includes(value)) {
+      throw new Error("Gender not allowed"); // so see this validate function is inly run when new user come but its will not run for existng user so for existing user s 
+      //we have to enable it using runValidaters:true explicitly so now it will not update these also but before it was just only use this for new user but after using runvalidaters:true 
+      //it will not for all for existing users also 
+    }
+  }
+},
+
+    email:{
+      type:String,
+      unique:true,
     },
     password:{
-        type:String
+        type:String,
+        minLength:8,
+    },
+    about:{
+      type:String,
+      default:"hello guys i am good"
     }
+},{
+  timestamps:true,// so from now this will us to see when user eneterd or updated this will show us for all because we added this at last 
 })
 const User = mongoose.model("user",userdata)
 module.exports = User

@@ -669,17 +669,33 @@ const connectt = require("./config/database")
 const User = require("./middlewares/models/user")
 const app = express();
 
-app.post("/singup", async(req,res)=>{
-    const user = new User({
-    firstName:"sohel",
+
+
+//creating a user of user model see this is how we create this but what if we need to and sayve a data from sign up form 
+/*app.post("/singup", async(req,res)=>{
+    const user = new User
+    ({
+    firstName:"ms",
     lastName:"khan",
-    age:23,
-    password:"soheluvb"
+    age:50,
+    gender:"Male",
+    password:"luvb"
+    email:sohel@gmail.com
 })
 
 await user.save()
 res.send("data saved succesfully")
+})*/
+
+//to save data from end user directly we did to save data harcoded from our own now from end user
+//we use for this we use express json
+/*app.use(express.json())
+app.post("/singup",async(req,res)=>{
+    const user = new User(req.body)
+
 })
+await user.save()
+res.send("data saved succesfully")
 
 
 
@@ -693,7 +709,128 @@ connectt()
 })
 }).catch((err)=>{
     console.error("not connected")
+})*/
+
+
+app.use(express.json());
+
+// to save data coming from end user (signup form / postman)
+/*app.post("/signup", async (req, res) => {
+  try {
+    const user = new User(req.body);   // create user with incoming data
+    await user.save();                 // save to DB
+    res.send("data saved successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("error saving data");
+  }
+});
+
+// connect DB and start server
+connectt()
+  .then(() => {
+    console.log("db connected");
+    app.listen(7777, () => {
+      console.log("server is running on port 7777");
+    });
+  })
+  .catch((err) => {
+    console.error("not connected", err);
+  });*/
+
+
+// see this is how you can through end user using express json
+  app.use(express.json())
+  app.post("/signup",async(req,res)=>{
+   try{
+    const user = new User(req.body)
+    await user.save()
+    res.send("data saved succesfulkly")
+   }catch(err){
+    console.error(err)
+    res.status("500").send("not saved")
+   }
+  })
+
+  
+app.get("/user",async(req,res)=>{
+    
+        const useremail = req.body.email
+        try{
+        const users = await User.find({email:useremail})
+      
+    if(users.length===0){
+        res.status(404).send("user not found")
+    }else{
+        res.send(users)
+    }
+    
+    }catch(err){
+        console.error(err)
+        res.status(400).send(" creashed")
+    }
+    
 })
+
+// see this how we can delete user by id it has so many function we can use to delete 
+app.delete("/user",async(req,res)=>{
+   const userid = req.body._id
+    try{
+        const userd = await User.findByIdAndDelete(userid)
+        if(!userd===0){
+             res.status(404).send("h hi nhi id")
+        }else{
+            res.send("the provided id is deleted")
+        }
+    }catch(err){
+        console.log(err)
+        res.status(400).send("dindt get")
+    }
+})
+
+
+
+//see now we want to to update how to update the first thing we need as param is id we need to update the second is variable the third is data from wheere we get 
+app.patch("/user",async(req,res)=>{
+    //the req.body is whole body documnts and almost every thing in express return promise so we have  to us easync await 
+    const userid = req.body._id
+    const data = req.body
+    try{
+        const userm = await User.findByIdAndUpdate({_id:userid},data)
+        runValidaters:true //this will help to not update existing users gender also you can check in users for more 
+
+         if (!userm) {
+      return res.status(404).send("User not found");
+    }
+
+    res.send(userm); // send updated user
+        
+    }catch(err){
+        console.log(err)
+        res.status(400).send("something went wrong")
+    }
+})
+  
+
+
+  connectt()
+  .then(()=>{
+    console.log("db connected")
+    app.listen(7777,()=>{
+        console.log("server is connected")
+    })
+    }).catch((err)=>{
+        console.error("not connected saved",err)
+  })
+
+
+
+
+
+
+
+
+
 
 
 
