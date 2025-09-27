@@ -75,8 +75,11 @@ Example	userSchema	User*/
 
 
 const mongoose = require("mongoose")
+const validator = require("validator")
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
-const userdata = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     firstName:{
         type:String,
         Require:true,
@@ -123,5 +126,19 @@ const userdata = new mongoose.Schema({
 },{
   timestamps:true,// so from now this will us to see when user eneterd or updated this will show us for all because we added this at last 
 })
-const User = mongoose.model("user",userdata)
+
+userSchema.methods.getjwt = function() {
+  const user = this;
+  const token = jwt.sign({ _id: user._id }, "sohel@tinder123"); // synchronous
+  return token;
+}
+
+userSchema.methods.validatepassword = async function(passwordin){
+  const user = this;
+  const passwordhash = user.password;
+  const ispassvalid = await bcrypt.compare(passwordin, passwordhash);
+  return ispassvalid;
+}
+
+const User = mongoose.model("user",userSchema);
 module.exports = User

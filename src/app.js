@@ -666,7 +666,12 @@ app.listen(7777, () => {
 const express = require("express");
 
 const connectt = require("./config/database")
-const User = require("./middlewares/models/user")
+const User = require("./middlewares/models/user");
+const { validation } = require("./utils/validate");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieparser = require("cookie-parser");
+const { userAuth } = require("./middlewares/auth.js");
 const app = express();
 
 
@@ -713,6 +718,7 @@ connectt()
 
 
 app.use(express.json());
+app.use(cookieparser())
 
 // to save data coming from end user (signup form / postman)
 /*app.post("/signup", async (req, res) => {
@@ -739,24 +745,208 @@ connectt()
   });*/
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // see this is how you can through end user using express json
   app.use(express.json())
   app.post("/signup",async(req,res)=>{
    try{
-    const user = new User(req.body)
+    validation(req)
+    //decypt the password
+    const {firstName,lastName,email,password} = req.body
+
+    const passwordhash = await bcrypt.hash(password,10)
+    //console.log(passwordhash)
+
+    // ab is bjai const user = new User(req.body)
+    const user = new User({firstName,lastName,email,password:passwordhash})
     await user.save()
     res.send("data saved succesfulkly")
    }catch(err){
     console.error(err)
-    res.status("500").send("not saved")
+    res.status(500).send("not saved")
    }
   })
 
-  
+
+ /* app.post("/login",async(req,res)=>{
+    const {email,password} = req.body;
+    try{
+    const user =await User.findOne({email:email})
+    if(!user){
+        throw new Error("invalid credentials")
+    }
+    //const ispassvalid = await bcrypt.compare(password,user.password)
+    const ispassvalid = await user.validatepassword;
+  /*  if(!ispassvalid){
+       return res.status(404).send("ivalid credentilas")
+    }
+   if(ispassvalid){
+       const token = await user.getjwt();
+    }
+   // const token = jwt.sign({_id:user._id},"sohel@tinder123")
+    res.cookie("token",token)
+    res.send("login successfull")
+   /* else{
+        res.status(500).send("credentials is invalid")
+    }
+    
+}catch(err){
+    console.error(err)
+ res.status(400).send("something went wrong ")
+}
+
+  })*/
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(401).send("Invalid credentials");
+    }
+
+    const ispassvalid = await user.validatepassword(password);
+    if (!ispassvalid) {
+      return res.status(401).send("Invalid credentials");
+    }
+
+    const token = user.getjwt(); // get JWT
+    res.cookie("token", token, { httpOnly: true }); // set cookie securely
+    res.send("Login successful");
+  } catch (err) {
+    console.error(err);
+    res.status(400).send("Something went wrong");
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// PROFILE ROUTE
+/*app.get("/profile", async (req, res) => {
+  try {
+    // 1️⃣ Get token from cookies
+    const token = req.cookies.token;
+    if (!token) return res.status(401).send("Not authenticated");
+
+    // 2️⃣ Verify token
+    const decoded = jwt.verify(token, "sohel@tinder123");
+    const userId = decoded._id;
+
+    // 3️⃣ Find user by ID
+    const user = await User.findById(userId).select("-password"); // Exclude password
+    if (!user) return res.status(404).send("User not found");
+
+    // 4️⃣ Send user profile
+    res.send(user);
+
+  } catch (err) {
+    console.error("Profile Error:", err.message);
+    res.status(400).send("Something went wrong");
+  }
+});*/
+
+
+app.get("/profile",userAuth, async (req, res) => {
+  try {
+    // 1️⃣ Get token from cookies
+    
+    // 3️⃣ Find user by ID
+
+    // 4️⃣ Send user profile
+    const user = req.user
+    res.send(user);
+
+  } catch (err) {
+    console.error("Profile Error:", err.message);
+    res.status(400).send("Something went wrong");
+  }
+});
+app.post("/sendreq", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    // you can use user data here, e.g., user.firstName
+    res.send(user.firstName + " request is sent");
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
+  }
+});
+
+
+
+ /* 
 app.get("/user",async(req,res)=>{
     
         const useremail = req.body.email
         try{
+            
         const users = await User.find({email:useremail})
       
     if(users.length===0){
@@ -824,7 +1014,7 @@ app.delete("/user",async(req,res)=>{
     }
 })*/
 
-app.patch("/user/:userid", async (req, res) => {
+/*app.patch("/user/:userid", async (req, res) => {
   const userid = req.params.userid;   // id from URL
   const data = req.body;              // update fields
 
@@ -851,7 +1041,7 @@ app.patch("/user/:userid", async (req, res) => {
     console.error("Update Error:", err.message);
     res.status(400).send("Something went wrong");
   }
-});
+});*/
 
   
 
@@ -865,6 +1055,13 @@ app.patch("/user/:userid", async (req, res) => {
     }).catch((err)=>{
         console.error("not connected saved",err)
   })
+
+
+
+
+
+
+
 
 
 
