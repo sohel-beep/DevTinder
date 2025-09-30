@@ -132,7 +132,7 @@ userSchema.methods.getjwt = function() {
   const token = jwt.sign({ _id: user._id }, "sohel@tinder123"); // synchronous
   return token;
 }
-
+ 
 userSchema.methods.validatepassword = async function(passwordin){
   const user = this;
   const passwordhash = user.password;

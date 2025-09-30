@@ -667,11 +667,15 @@ const express = require("express");
 
 const connectt = require("./config/database")
 const User = require("./middlewares/models/user");
-const { validation } = require("./utils/validate");
-const bcrypt = require("bcrypt");
+//const { validation } = require("./utils/validate");
+//const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const cookieparser = require("cookie-parser");
+//const cookieparser = require("cookie-parser");
 const { userAuth } = require("./middlewares/auth.js");
+//const authenticated = require("./routers/authorization.js");
+const router = require("./routers/authorization.js");
+const profilerouter = require("./routers/profile.js");
+const sendreqrouter = require("./routers/sendreq.js");
 const app = express();
 
 
@@ -718,7 +722,7 @@ connectt()
 
 
 app.use(express.json());
-app.use(cookieparser())
+//app.use(cookieparser())
 
 // to save data coming from end user (signup form / postman)
 /*app.post("/signup", async (req, res) => {
@@ -774,7 +778,7 @@ connectt()
 
 // see this is how you can through end user using express json
   app.use(express.json())
-  app.post("/signup",async(req,res)=>{
+  /*app.post("/signup",async(req,res)=>{
    try{
     validation(req)
     //decypt the password
@@ -791,7 +795,7 @@ connectt()
     console.error(err)
     res.status(500).send("not saved")
    }
-  })
+  }) see instead of this we have created a express router so our app.js file looks clean because its meant to be cleaned */
 
 
  /* app.post("/login",async(req,res)=>{
@@ -823,7 +827,12 @@ connectt()
 
   })*/
 
-app.post("/login", async (req, res) => {
+
+app.use("/",router)
+app.use("/",profilerouter)
+app.use("/",sendreqrouter)
+
+/*app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -844,7 +853,7 @@ app.post("/login", async (req, res) => {
     console.error(err);
     res.status(400).send("Something went wrong");
   }
-});
+});*/
 
 
 
@@ -914,7 +923,7 @@ app.post("/login", async (req, res) => {
 });*/
 
 
-app.get("/profile",userAuth, async (req, res) => {
+/*app.get("/profile",userAuth, async (req, res) => {
   try {
     // 1️⃣ Get token from cookies
     
@@ -928,7 +937,7 @@ app.get("/profile",userAuth, async (req, res) => {
     console.error("Profile Error:", err.message);
     res.status(400).send("Something went wrong");
   }
-});
+});*/
 app.post("/sendreq", userAuth, async (req, res) => {
   try {
     const user = req.user;
@@ -1042,6 +1051,105 @@ app.delete("/user",async(req,res)=>{
     res.status(400).send("Something went wrong");
   }
 });*/
+
+
+/*🔹 What are Express Routers?
+
+Express Routers are a way to organize your routes in an Express app.
+
+Normally, in a small app, you might write all routes in app.js:
+
+app.get("/users", (req, res) => { ... })
+app.post("/users", (req, res) => { ... })
+app.get("/products", (req, res) => { ... })
+
+
+But as your app grows, this becomes messy.
+
+Express Router lets you split routes into separate files for better structure.
+
+🔹 Basic Usage
+
+Create a router in a separate file (e.g., userRoutes.js):
+
+const express = require("express");
+const router = express.Router();
+
+// GET /users
+router.get("/", (req, res) => {
+  res.send("All users");
+});
+
+// POST /users
+router.post("/", (req, res) => {
+  res.send("Create user");
+});
+
+module.exports = router;
+
+
+Use the router in your main app (app.js):
+
+const express = require("express");
+const app = express();
+const userRoutes = require("./userRoutes");
+
+app.use(express.json());
+
+// All /users routes will go through userRoutes
+app.use("/users", userRoutes);
+
+app.listen(3000, () => console.log("Server running"));
+
+🔹 How it Works
+
+app.use("/users", userRoutes) means:
+All routes defined in userRoutes are prefixed with /users.
+
+So in userRoutes if you have router.get("/"), it becomes /users in the main app.
+
+This lets you split your code by feature, e.g., userRoutes, productRoutes, authRoutes.
+
+🔹 Benefits of Express Router
+
+Organized code → no giant app.js.
+
+Reusable modules → each router handles its own routes.
+
+Middleware flexibility → you can attach middleware to a specific router:
+
+router.use(authMiddleware); // only for routes in this router
+
+🔹 Example with Authentication
+// authRoutes.js
+const router = require("express").Router();
+const jwt = require("jsonwebtoken");
+
+router.post("/login", (req, res) => {
+  // login logic
+});
+
+router.post("/signup", (req, res) => {
+  // signup logic
+});
+
+module.exports = router;
+
+// app.js
+const express = require("express");
+const app = express();
+const authRoutes = require("./authRoutes");
+
+app.use(express.json());
+app.use("/auth", authRoutes); // all auth routes are now prefixed with /auth
+
+
+/auth/login → login route
+
+/auth/signup → signup route
+
+✅ In short:
+Express Router = mini express app. It allows you to group and organize routes for cleaner, scalable backend code. */
 
   
 
