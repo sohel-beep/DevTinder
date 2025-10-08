@@ -832,6 +832,7 @@ app.use("/",router)
 app.use("/",profilerouter)
 app.use("/",sendreqrouter)
 
+
 /*app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -938,6 +939,8 @@ app.use("/",sendreqrouter)
     res.status(400).send("Something went wrong");
   }
 });*/
+
+/*
 app.post("/sendreq", userAuth, async (req, res) => {
   try {
     const user = req.user;
@@ -946,7 +949,7 @@ app.post("/sendreq", userAuth, async (req, res) => {
   } catch (err) {
     res.status(400).send("Something went wrong: " + err.message);
   }
-});
+});*/
 
 
 

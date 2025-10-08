@@ -55,6 +55,18 @@ router.use(cookieparser());
     res.status(400).send("Something went wrong");
   }
 });
+router.post("/logout", async (req, res) => {
+  try {
+    res.cookie("token", "null", {  // clear the token
+      httpOnly: true,
+      expires: new Date(0)   // set expiration in the past
+    });
+    res.send("Logged out successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Difficulty in logout");
+  }
+});
 
   module.exports = router;
 

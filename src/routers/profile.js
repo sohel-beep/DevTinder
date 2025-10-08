@@ -16,4 +16,32 @@ profilerouter.get("/profile",userAuth, async (req, res) => {
     res.status(400).send("Something went wrong");
   }
 });
+profilerouter.patch("/profile/update",userAuth,async(req,res)=>{
+  try{
+    const isAllowedupdates = ["firstName","lastName","age","skills"]
+    const updates = Object.keys(req.body)
+    const allowed = updates.every(field =>isAllowedupdates.includes(field))
+    if(!allowed){
+     return res.status(500).send("sorry not allowed to update")
+    }
+    updates.forEach(field => {
+      req.user[field]=req.body[field]
+    });
+   await req.user.save()
+   res.send(req.user)
+  }catch{
+    return res.status(400).send("something went wrong")
+  }
+})
+profilerouter.patch("/profile/forgotpass",async(req,res)=>{
+  try{
+    
+  const {pass} = req.body;
+
+  const passs =  bcrypt.compare(pass,passwordhash)
+  }catch{
+
+  }
+
+})
 module.exports = profilerouter;
