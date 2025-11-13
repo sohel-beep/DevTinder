@@ -72,7 +72,7 @@ Definition	Structure/blueprint of data	Interface to interact with DB
 Purpose	Defines fields, types, validation	Performs CRUD operations
 Example	userSchema	User*/
 
-
+/*
 
 const mongoose = require("mongoose")
 const validator = require("validator")
@@ -141,4 +141,71 @@ userSchema.methods.validatepassword = async function(passwordin){
 }
 
 const User = mongoose.model("user",userSchema);
-module.exports = User
+module.exports = User*/
+
+
+const mongoose = require("mongoose");
+const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
+const userSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: true,      // fixed typo: Require -> required
+    minLength: 4,
+    maxLength: 40,       // fixed typo: mnaxLength -> maxLength
+  },
+  lastName: {
+    type: String
+  },
+  age: {
+    type: Number
+  },
+  gender: {
+    type: String,
+    enum: ["male", "female", "other"], // quick validation
+    validate(value) {
+      if (!["male", "female", "other"].includes(value)) {
+        throw new Error("Gender not allowed"); 
+      }
+    }
+  },
+  email: {
+    type: String,
+    unique: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    minLength: 8,
+  },
+  about: {
+    type: String,
+    default: "hello guys i am good"
+  },
+  skills: {
+    type: [String],
+    default: [],
+  }
+}, {
+  timestamps: true, // adds createdAt and updatedAt automatically
+});
+
+// ✅ Method to generate JWT
+userSchema.methods.getjwt = function() {
+  const user = this;
+  const token = jwt.sign({ _id: user._id }, "sohel@tinder123"); // synchronous
+  return token;
+}
+
+// ✅ Method to validate password
+userSchema.methods.validatepassword = async function(passwordin) {
+  const user = this;
+  const passwordhash = user.password;
+  const ispassvalid = await bcrypt.compare(passwordin, passwordhash);
+  return ispassvalid;
+}
+
+const User = mongoose.model("user", userSchema);
+module.exports = User;

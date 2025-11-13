@@ -1,13 +1,16 @@
+ const express = require("express")
+ const User = require("../middlewares/models/user");
  const mongoose = require("mongoose");
 const { userAuth } = require("../middlewares/auth");
- const reqrouter = express.Router()
+const Requestconnect = require("../middlewares/models/requestconnect");
+ const reqr = express.Router()
 
- reqrouter.get("/user/status",userAuth,async(reqrouter,res)=>{
+ reqr.get("/user/status",userAuth,async(req,res)=>{
     try{
     const loggedin = req.user
 
-    const loggedinuser = await Loggedinuser.find(
-        {touser:loggedinuser,_id,
+    const pendingrequests = await Requestconnect.find(
+        {touser:loggedin._id,
         status:"pending",
         }).populate(["firstName","lastName","skills","gender"])
        /* What is a Relationship in MongoDB?
@@ -87,14 +90,13 @@ Reference (store ObjectId) → smaller documents, needs populate to fetch relate
 
 MongoDB is flexible → choose based on read/write patterns and data size.*/
 
-res.json({message:"co"})
+res.json({pendingrequests})
     }catch(err){
         res.send(404).send("something wrong went"+err.message)
     }
  })
 
-
- reqrouter.get("/user/connections", userAuth, async (req, res) => {
+reqr.get("/user/connections", userAuth, async (req, res) => {
   try {
     const loggedinuer = req.user;
 
@@ -104,20 +106,69 @@ res.json({message:"co"})
         { fromuser: loggedinuer._id, status: "accepted" },
       ]
     })
-    .populate("fromuser", "firstName lastName skills gender")
-    .populate("touser", "firstName lastName skills gender");
+    .populate("fromuser", "firstName lastName skills gender about")
+    .populate("touser", "firstName lastName skills gender about");
 
     // Map to get the other user
-    const mapped = requestconnect.map(row => 
-      row.fromuser._id.equals(loggedinuer._id)
+    const connections = requestconnect.map(row => 
+      row.fromuser._id.equals(loggedinuer._id) ? row.touser : row.fromuser
     );
 
-    res.json({ data: mapped });
+    res.json({ connections });
   } catch(err) {
     console.error(err);
     res.status(404).send("something went wrong!!!");
   }
 });
- 
 
- module.exports =  reqrouter;
+
+
+
+// now we are making feed making and its the very core thing to make the dev tinder so its best to make feed api because its crucil
+//to male 
+reqr.get("/feed", userAuth, async (req, res) => {
+  try {
+    const loggedinuser = req.user;
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    limit = limit > 50 ? 50 : limit;
+    const skip = (page - 1) * limit;
+
+    const requestconnect = await Requestconnect.find({
+      $or: [
+        { fromuser: loggedinuser._id },
+        { touser: loggedinuser._id },
+      ]
+    }).select("fromuser touser");
+
+    const hiddenuserafterreq = new Set();
+
+    requestconnect.forEach((r) => {
+  if (!r.fromuser.equals(loggedinuser._id)) hiddenuserafterreq.add(r.fromuser.toString());
+  if (!r.touser.equals(loggedinuser._id)) hiddenuserafterreq.add(r.touser.toString());
+});
+
+
+    console.log("loggedinuser:", loggedinuser._id);
+    console.log("hidden users:", Array.from(hiddenuserafterreq));
+
+    const users = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(hiddenuserafterreq) } },
+        { _id: { $ne: loggedinuser._id } }
+      ],
+    }).select("firstName lastName skills gender about").skip(skip).limit(limit);
+
+    res.json({users});
+  } catch (error) {
+    console.error("Feed error:", error); // logs full error in server console
+    res.status(404).json({
+      message: "something went wrong!!!",
+      error: error.message || error
+    });
+  }
+});
+
+
+
+ module.exports =  reqr;

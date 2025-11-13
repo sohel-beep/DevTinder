@@ -662,21 +662,31 @@ app.listen(7777, () => {
 })*/
 
 
-
+/*
 const express = require("express");
-
+const cors = require("cors")
+const cookieParser = require("cookie-parser");
 const connectt = require("./config/database")
 const User = require("./middlewares/models/user");
+const router = require("./routers/authorization.js");
+const profilerouter = require("./routers/profile.js");
+const sendreqrouter = require("./routers/sendreq.js");
+const reqr = require("./routers/user.js")
 //const { validation } = require("./utils/validate");
 //const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 //const cookieparser = require("cookie-parser");
 const { userAuth } = require("./middlewares/auth.js");
 //const authenticated = require("./routers/authorization.js");
-const router = require("./routers/authorization.js");
-const profilerouter = require("./routers/profile.js");
-const sendreqrouter = require("./routers/sendreq.js");
-const app = express();
+
+
+
+const app = express();*/
+
+
+
+
+
 
 
 
@@ -719,10 +729,21 @@ connectt()
 }).catch((err)=>{
     console.error("not connected")
 })*/
+/*
+app.use(cors({
+  origin: "http://localhost:5173",
+   methods: ["GET", "POST", "PATCH", "DELETE"], // ✅ allow patch for update
+  credentials: true
+}));*/
 
-
-app.use(express.json());
+//app.use(cors()) // see brro just doing this we are i meaning using cors we just implementing both different localhost nothing else 
+  //we are not getting cookies i our front end so getting cookies we have to pass credentials and origin like this in our app.use(cors(
+//origin:http://localhost:5173/Login,
+//credentials:true,
+//))
+//
 //app.use(cookieparser())
+//app.use(cookieParser()); //  Important – Required for JWT cookies
 
 // to save data coming from end user (signup form / postman)
 /*app.post("/signup", async (req, res) => {
@@ -777,7 +798,8 @@ connectt()
 
 
 // see this is how you can through end user using express json
-  app.use(express.json())
+  /*app.use(express.json())
+  app.use(cookieParser())*/
   /*app.post("/signup",async(req,res)=>{
    try{
     validation(req)
@@ -827,10 +849,11 @@ connectt()
 
   })*/
 
-
+/*
 app.use("/",router)
 app.use("/",profilerouter)
 app.use("/",sendreqrouter)
+app.use("/",reqr)*/
 
 
 /*app.post("/login", async (req, res) => {
@@ -1156,7 +1179,7 @@ Express Router = mini express app. It allows you to group and organize routes fo
 
   
 
-
+/*
   connectt()
   .then(()=>{
     console.log("db connected")
@@ -1165,7 +1188,146 @@ Express Router = mini express app. It allows you to group and organize routes fo
     })
     }).catch((err)=>{
         console.error("not connected saved",err)
+  })*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+const express = require("express");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const connectt = require("./config/database");
+const router = require("./routers/authorization.js");
+const profilerouter = require("./routers/profile.js");
+const sendreqrouter = require("./routers/sendreq.js");
+const reqr = require("./routers/user.js");
+
+const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
+app.use(express.json());
+app.use(cookieParser());
+
+// ✅ Routes
+app.use("/", router);
+app.use("/", profilerouter);
+app.use("/", sendreqrouter);
+app.use("/", reqr);
+
+// ✅ Test route
+app.get("/", (req, res) => {
+  res.send("CORS fixed ✅");
+});
+
+// ✅ DB connect
+connectt()
+  .then(() => {
+    console.log("DB connected");
+    app.listen(7777, () => {
+      console.log("Server running on port 7777 ✅");
+    });
   })
+  .catch((err) => {
+    console.error("DB connection failed ❌", err);
+  });*/
+
+
+
+
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const connectt = require("./config/database");
+
+// Routers
+const router = require("./routers/authorization.js");
+const profilerouter = require("./routers/profile.js");
+const sendreqrouter = require("./routers/sendreq.js");
+const reqr = require("./routers/user.js");
+
+const app = express();
+
+// ✅ Manual CORS setup (fix for Express v5)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+// ✅ Middleware
+app.use(express.json());
+app.use(cookieParser());
+
+// ✅ Routes
+app.use("/", router);
+app.use("/", profilerouter);
+app.use("/", sendreqrouter);
+app.use("/", reqr);
+
+// ✅ Test route
+app.get("/", (req, res) => {
+  res.send("CORS fixed ✅");
+});
+
+// ✅ Database connect and server start
+connectt()
+  .then(() => {
+    console.log("DB connected");
+    app.listen(7777, () => {
+      console.log("Server running on port 7777 ✅");
+    });
+  })
+  .catch((err) => {
+    console.error("DB connection failed ❌", err);
+  });
+
+
+
+
 
 
 
